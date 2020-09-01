@@ -1,3 +1,5 @@
+require 'pry'
+
 class Bakery
 
   attr_accessor :name
@@ -17,6 +19,22 @@ class Bakery
     Ingredient.all.select {|inst_ingredient| inst_ingredient.bakeries.include?(self)}
   end
 
+  def average_calories
+    sum = 0.0
+    array_of_calories = self.desserts.map { |dessert|
+      dessert.calories
+    }
+    sum = array_of_calories.sum
+    average = sum / self.desserts.count
+  end
+
+  def shopping_list
+    name_array = self.ingredients.map { |ingredient|
+      ingredient.name
+    }
+    name_array.join(", ")
+  end
+
   def self.all
     @@all
   end
@@ -26,17 +44,23 @@ end
 
 class Dessert
 
-  attr_accessor :bakery
+  attr_accessor :name, :bakery
   @@all = []
 
-  def initialize(bakery)
+  def initialize(name, bakery)
+    @name = name
     @bakery = bakery
     @@all << self
   end
 
   def ingredients #to return an array of ingredient for the recipe of this dessert object
     recipe_of_this_dessert = Recipe.all.find {|inst_recipe| inst_recipe.dessert == self} 
-    recipe_of_this_dessert.ingredients
+
+    if recipe_of_this_dessert != nil
+      recipe_of_this_dessert.ingredients
+    else
+      []
+    end
   end
 
   def calories #adds calories for each ingredient for this(self) dessert
@@ -44,7 +68,7 @@ class Dessert
     self.ingredients.each do |inst_ingredient| 
       sum += inst_ingredient.calories
     end
-    sum.to_f
+    sum
   end
 
   def self.all
@@ -62,6 +86,13 @@ class Recipe #join_table for ingredient and dessert
     @ingredients = ingredients
     @dessert = dessert
     @@all << self
+  end
+
+  def ingredient_list
+    name_array = @ingredients.map { |ingredient|
+      ingredient.name
+    }
+    name_array.join(", ")
   end
 
   def self.all
